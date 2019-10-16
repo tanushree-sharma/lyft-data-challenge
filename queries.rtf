@@ -1,0 +1,1207 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf400
+{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;\f1\fnil\fcharset0 Menlo-Bold;}
+{\colortbl;\red255\green255\blue255;\red128\green128\blue128;\red128\green0\blue0;\red0\green0\blue128;
+\red255\green0\blue0;\red0\green128\blue0;\red0\green0\blue255;}
+{\*\expandedcolortbl;;\csgenericrgb\c50196\c50196\c50196;\csgenericrgb\c50196\c0\c0;\csgenericrgb\c0\c0\c50196;
+\csgenericrgb\c100000\c0\c0;\csgenericrgb\c0\c50196\c0;\csgenericrgb\c0\c0\c100000;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf2 -- getting the number of rides that a driver has completed\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  driver_id, 
+\f1\b \cf4 COUNT
+\f0\b0 \cf0 (ride_id) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  numRides\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids\
+
+\f1\b \cf3 GROUP
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  driver_id\
+
+\f1\b \cf3 ORDER
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  numRides 
+\f1\b \cf3 DESC
+\f0\b0 \cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --check \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  *\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_timestamps\
+
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  ride_id \cf6 '034f2e614a2f9fc7f1c2f77647d1b981'\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.ride_id, a.ride_prime_time, b.timestamps\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids a \
+
+\f1\b \cf3 INNER
+\f0\b0 \cf0  
+\f1\b \cf3 JOIN
+\f0\b0 \cf0  tempdb.dbo.ride_timestamps b \
+
+\f1\b \cf3 ON
+\f0\b0 \cf0  a.ride_id = b.ride_id\
+
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  a.ride_prime_time > \cf7 0\cf0 \
+
+\f1\b \cf3 ORDER
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  a.ride_prime_time 
+\f1\b \cf3 DESC
+\f0\b0 \cf5 ;\cf0 \
+\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf3 DISTINCT
+\f0\b0 \cf0  ride_prime_time\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids\
+
+\f1\b \cf3 ORDER
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  ride_prime_time 
+\f1\b \cf3 DESC
+\f0\b0 \cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.driverLifetimes\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- creating a table with driver id, start date, and their latest ride\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.driver_id, a.driver_onboard_date, b.ride_id, 
+\f1\b \cf4 MAX
+\f0\b0 \cf0 (c.timestamps) 
+\f1\b \cf3 as
+\f0\b0 \cf0  LastRide\
+
+\f1\b \cf3 INTO
+\f0\b0 \cf0  tempdb.dbo.driverLifetimes \cf2 -- name of the new table\cf0 \
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids a \
+
+\f1\b \cf3 LEFT
+\f0\b0 \cf0  
+\f1\b \cf3 JOIN
+\f0\b0 \cf0  tempdb.dbo.ride_ids b\
+
+\f1\b \cf3 ON
+\f0\b0 \cf0  a.driver_id = b.driver_id\
+
+\f1\b \cf3 LEFT
+\f0\b0 \cf0  
+\f1\b \cf3 JOIN
+\f0\b0 \cf0  tempdb.dbo.ride_timestamps c\
+
+\f1\b \cf3 ON
+\f0\b0 \cf0  b.ride_id = c.ride_id\
+
+\f1\b \cf3 GROUP
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  a.driver_id, a.driver_onboard_date, b.ride_id\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- dropping a table, need to do this everytime you re-run the create table script below\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.driverLifetimesFinal\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- getting the difference between each drivers latest ride and their start date\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  driver_id,\
+	(
+\f1\b \cf3 CASE
+\f0\b0 \cf0  \cf2 -- case statement is like an if statement to say that if they don't have a latest ride date, make the date difference a 0\cf0 \
+		
+\f1\b \cf3 WHEN
+\f0\b0 \cf0  (
+\f1\b \cf4 MAX
+\f0\b0 \cf0 (DATEDIFF(
+\f1\b \cf3 DAY
+\f0\b0 \cf0 , driver_onboard_date, LastRide))) 
+\f1\b \cf3 IS
+\f0\b0 \cf0  
+\f1\b \cf3 NULL
+\f0\b0 \cf0  
+\f1\b \cf3 THEN
+\f0\b0 \cf0  \cf7 0\cf0 \
+		
+\f1\b \cf3 ELSE
+\f0\b0 \cf0  (
+\f1\b \cf4 MAX
+\f0\b0 \cf0 (DATEDIFF(
+\f1\b \cf3 DAY
+\f0\b0 \cf0 , driver_onboard_date, LastRide)))\
+	
+\f1\b \cf3 END
+\f0\b0 \cf0 ) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  diff\
+
+\f1\b \cf3 INTO
+\f0\b0 \cf0  tempdb.dbo.driverLifetimesFinal \cf2 -- name of the new table\cf0 \
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driverLifetimes\
+
+\f1\b \cf3 GROUP
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  driver_id\
+
+\f1\b \cf3 ORDER
+\f0\b0 \cf0  
+\f1\b \cf3 BY
+\f0\b0 \cf0  diff 
+\f1\b \cf3 DESC
+\f0\b0 \cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- getting the average date difference, which was 49\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf4 AVG
+\f0\b0 \cf0 (diff)\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driverLifetimesFinal\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- getting the lifetime rate by taking the date difference and dividing by the average date difference (49)\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),lifetime_rate 
+\f1\b \cf4 decimal
+\f0\b0 \cf0 (\cf7 10\cf0 ,\cf7 3\cf0 ))\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  driver_id, (diff/\cf7 49\cf0 .\cf7 00\cf0 )\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driverLifetimesFinal\cf5 ;\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- changing the data type of a column\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 ALTER
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  tempdb.dbo.driverLifetimesFinal\
+
+\f1\b \cf3 ALTER
+\f0\b0 \cf0  
+\f1\b \cf3 COLUMN
+\f0\b0 \cf0  diff 
+\f1\b \cf4 DECIMAL
+\f0\b0 \cf0 (\cf7 5\cf0 ,\cf7 2\cf0 )\cf5 ;\cf0 \
+\
+\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 count
+\f0\b0 \cf0 (
+\f1\b \cf3 distinct
+\f0\b0 \cf0  driver_id) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_dist_value\cf5 ;\cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf2 --!!!distance value\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --adds ride distance for each driver \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),total_ride_distance 
+\f1\b \cf4 int
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, 
+\f1\b \cf4 sum
+\f0\b0 \cf0 (ride_distance) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.ride_ids 
+\f1\b \cf3 group
+\f0\b0 \cf0  
+\f1\b \cf3 by
+\f0\b0 \cf0  driver_id\cf5 ;\cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf2 --some drivers have no rides so set their temp_total_dist to 0\cf0 \
+\cf2 -- gets all riders that are in driver_ids but not in temp_total_dist\cf0 \
+ \cf2 -- add to temp_total_dist, setting total ride distance to 0\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.driver_id, \cf7 0\cf0  
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  b.driver_id = a.driver_id)\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_dist_date\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- gets the 'now' time \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_max_timestamp(max_timestamp 
+\f1\b \cf4 date
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_max_timestamp\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 MAX
+\f0\b0 \cf0 (timestamps) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  max_timestamp 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.ride_timestamps\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --driverid, total ride distance and onboard date on one table\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_dist_date (driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),total_ride_distance 
+\f1\b \cf4 int
+\f0\b0 \cf0 ,onboard_date 
+\f1\b \cf4 date
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_dist_date \
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  tempdb.dbo.driver_ids.driver_id, tempdb.dbo.temp_total_dist.total_ride_distance, driver_onboard_date\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids\
+
+\f1\b \cf3 INNER
+\f0\b0 \cf0  
+\f1\b \cf3 JOIN
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist \
+
+\f1\b \cf3 ON
+\f0\b0 \cf0  tempdb.dbo.driver_ids.driver_id = tempdb.dbo.temp_total_dist.driver_id\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --makes sure that number of drivers in driver_ids matches drivers in temp_dist_date\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf4 COUNT
+\f0\b0 \cf0 (\cf7 1\cf0 )\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_dist_date\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- gets the 'now' time \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 MAX
+\f0\b0 \cf0 (timestamps) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  max_timestamp 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.ride_timestamps\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_dist_numerator\cf5 ;\cf0 \
+\
+\
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_dist_numerator(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),total_ride_distance 
+\f1\b \cf4 int
+\f0\b0 \cf0 ,date_diff 
+\f1\b \cf4 int
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_dist_numerator\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, total_ride_distance, DATEDIFF(
+\f1\b \cf3 day
+\f0\b0 \cf0 , onboard_date, \cf6 '2016-06-27'\cf0 )\
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_dist_date\cf5 ;\cf0 \
+               		\
+\pard\pardeftab720\partightenfactor0
+\cf2 --get average from numerator 20544\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 AVG
+\f0\b0 \cf0 (total_ride_distance/date_diff) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  avg_num 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_dist_numerator\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 drop
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  
+\f1\b \cf3 if
+\f0\b0 \cf0  
+\f1\b \cf3 exists
+\f0\b0 \cf0  tempdb.dbo.final_dist_value\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --FINAL TABLE\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.final_dist_value(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),dist_value 
+\f1\b \cf4 decimal
+\f0\b0 \cf0 (\cf7 10\cf0 ,\cf7 3\cf0 ))\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.final_dist_value\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, (total_ride_distance/date_diff)/\cf7 20544\cf0 \
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_dist_numerator\cf5 ;\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --!!!prime time value\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --adds ride distance for each driver \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),total_ride_distance 
+\f1\b \cf4 int
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, 
+\f1\b \cf4 sum
+\f0\b0 \cf0 (ride_distance) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.ride_ids 
+\f1\b \cf3 group
+\f0\b0 \cf0  
+\f1\b \cf3 by
+\f0\b0 \cf0  driver_id\cf5 ;\cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf2 --some drivers have no rides so set their temp_total_dist to 0\cf0 \
+\cf2 -- gets all riders that are in driver_ids but not in temp_total_dist\cf0 \
+ \cf2 -- add to temp_total_dist, setting total ride distance to 0\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.driver_id, \cf7 0\cf0  
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  b.driver_id = a.driver_id)\cf5 ;\cf0 \
+ \
+ 
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 count
+\f0\b0 \cf0 (\cf7 1\cf0 ) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_total_dist\cf5 ;\cf0 \
+\
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally\cf5 ;\cf0 \
+\
+\
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ), twenty_five 
+\f1\b \cf4 int
+\f0\b0 \cf0 , fifty 
+\f1\b \cf4 int
+\f0\b0 \cf0 , seventy_five 
+\f1\b \cf4 int
+\f0\b0 \cf0 , hundo 
+\f1\b \cf4 int
+\f0\b0 \cf0 , one_fiddy 
+\f1\b \cf4 int
+\f0\b0 \cf0 ,\
+										two_hundo 
+\f1\b \cf4 int
+\f0\b0 \cf0 , two_fiddy 
+\f1\b \cf4 int
+\f0\b0 \cf0 , three_hundo 
+\f1\b \cf4 int
+\f0\b0 \cf0 , three_fiddy 
+\f1\b \cf4 int
+\f0\b0 \cf0 , four_hundo 
+\f1\b \cf4 int
+\f0\b0 \cf0 , five_hundo 
+\f1\b \cf4 int
+\f0\b0 \cf0 )\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally			\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 25\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  twenty_five,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 50\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  fifty,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 75\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  seventy_five,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 100\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  hundo,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 150\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  one_fiddy,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 200\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  two_hundo,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 250\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  two_fiddy,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 300\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  three_hundo,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 350\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  three_fiddy,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 400\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  four_hundo,\
+    
+\f1\b \cf4 sum
+\f0\b0 \cf0 (
+\f1\b \cf3 case
+\f0\b0 \cf0  
+\f1\b \cf3 when
+\f0\b0 \cf0  ride_prime_time = \cf7 500\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 1\cf0  
+\f1\b \cf3 else
+\f0\b0 \cf0  \cf7 0\cf0  
+\f1\b \cf3 end
+\f0\b0 \cf0 ) 
+\f1\b \cf3 as
+\f0\b0 \cf0  five_hundo\
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.ride_ids\
+
+\f1\b \cf3 group
+\f0\b0 \cf0  
+\f1\b \cf3 by
+\f0\b0 \cf0  driver_id\cf5 ;\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --IK YOU CAN DO AN INNER JOIN, BUT IDK HOW\cf0 \
+\cf2 --some drivers have no rides so set their prime_tally to all 0\cf0 \
+\cf2 -- gets all riders that are in driver_ids but not in ride_ids\cf0 \
+ \cf2 -- add to ride_ids, setting prime times to 0\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally	\
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.driver_id, \cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0  
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  b.driver_id = a.driver_id)\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --delete all drivers in prime_tally but not in driver_id\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 DELETE
+\f0\b0 \cf0  
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally	
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  driver_id 
+\f1\b \cf3 in
+\f0\b0 \cf0 \
+	(
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf3 distinct
+\f0\b0 \cf0  driver_id 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  a.driver_id = b.driver_id))\cf5 ;\cf0 \
+  \
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 count
+\f0\b0 \cf0 (\cf7 1\cf0 ) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally\cf5 ;\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 -- THIS DOESNT MAKE SENSE!!!\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  a.driver_id, \cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0 ,\cf7 0\cf0  
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  b.driver_id = a.driver_id)\cf5 ;\cf0 \
+ \
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf3 distinct
+\f0\b0 \cf0  driver_id 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  a 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  
+\f1\b \cf3 NOT
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  \
+   (
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 AS
+\f0\b0 \cf0  b 
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  a.driver_id = b.driver_id)\cf5 ;\cf0 \
+ \
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  * 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.driver_ids 
+\f1\b \cf3 where
+\f0\b0 \cf0  driver_id=\cf6 '234bb57cea53cfb13d8faf4a2900341a'\cf5 ;\cf0 \
+  \
+\pard\pardeftab720\partightenfactor0
+\cf2 -- check to make sure above query is right	\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 SELECT
+\f0\b0 \cf0  
+\f1\b \cf4 COUNT
+\f0\b0 \cf0 (ride_id)\
+
+\f1\b \cf3 FROM
+\f0\b0 \cf0  tempdb.dbo.ride_ids\
+
+\f1\b \cf3 WHERE
+\f0\b0 \cf0  driver_id = \cf6 '98a878a6fe557bf91236e6fc0413faba'\cf0 \
+
+\f1\b \cf3 AND
+\f0\b0 \cf0  ride_prime_time = \cf7 50\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.temp_prime_weighted\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.temp_prime_weighted(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ), prime_sum 
+\f1\b \cf4 decimal
+\f0\b0 \cf0 (\cf7 10\cf0 ,\cf7 3\cf0 ))\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.temp_prime_weighted\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, \
+		(
+\f1\b \cf3 CASE
+\f0\b0 \cf0 \
+		
+\f1\b \cf3 WHEN
+\f0\b0 \cf0  twenty_five+ fifty + seventy_five+ hundo + one_fiddy+ two_hundo+ two_fiddy + \
+	   	three_hundo+ three_fiddy + four_hundo + five_hundo = \cf7 0\cf0  
+\f1\b \cf3 THEN
+\f0\b0 \cf0  \cf7 0\cf0 \
+	   	
+\f1\b \cf3 ELSE
+\f0\b0 \cf0  ((twenty_five*(\cf7 0\cf0 .\cf7 25\cf0 ) + fifty*(\cf7 0\cf0 .\cf7 5\cf0 ) + seventy_five*(\cf7 0\cf0 .\cf7 75\cf0 ) + hundo*(\cf7 1\cf0 ) + one_fiddy*(\cf7 1\cf0 .\cf7 5\cf0 ) + two_hundo*(\cf7 2\cf0 ) + two_fiddy*(\cf7 2\cf0 .\cf7 5\cf0 ) + \
+	   	three_hundo*(\cf7 3\cf0 ) + three_fiddy*(\cf7 3\cf0 .\cf7 5\cf0 ) + four_hundo*(\cf7 4\cf0 ) + five_hundo*(\cf7 5\cf0 ))/(twenty_five+ fifty + seventy_five+ hundo + one_fiddy+ two_hundo+ two_fiddy + \
+	   	three_hundo+ three_fiddy + four_hundo + five_hundo))\
+		
+\f1\b \cf3 END
+\f0\b0 \cf0 )\
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  * 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_prime_tally 
+\f1\b \cf3 where
+\f0\b0 \cf0  driver_id= \cf6 'ffff51a71f2f185ec5e97d59dbcd7a78'\cf5 ;\cf0 \
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 count
+\f0\b0 \cf0 (*) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_dist_value\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --get average weight 0.444940\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 AVG
+\f0\b0 \cf0 (prime_sum) 
+\f1\b \cf3 AS
+\f0\b0 \cf0  prime_sum 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_prime_weighted\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.final_prime_val\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --FINAL TABLE\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.final_prime_val(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),prime_value 
+\f1\b \cf4 decimal
+\f0\b0 \cf0 (\cf7 10\cf0 ,\cf7 3\cf0 ))\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.final_prime_val\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  driver_id, (prime_sum/\cf7 0\cf0 .\cf7 444940\cf0 )\
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.temp_prime_weighted\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 DROP
+\f0\b0 \cf0  
+\f1\b \cf3 TABLE
+\f0\b0 \cf0  
+\f1\b \cf3 IF
+\f0\b0 \cf0  
+\f1\b \cf3 EXISTS
+\f0\b0 \cf0  tempdb.dbo.final_lifetime_value\cf5 ;\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 --! MERGE TABLES\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b \cf3 create
+\f0\b0 \cf0  
+\f1\b \cf3 table
+\f0\b0 \cf0  tempdb.dbo.final_lifetime_value(driver_id 
+\f1\b \cf4 varchar
+\f0\b0 \cf0 (\cf7 100\cf0 ),value 
+\f1\b \cf4 decimal
+\f0\b0 \cf0 (\cf7 10\cf0 ,\cf7 3\cf0 ))\cf5 ;\cf0 \
+
+\f1\b \cf3 insert
+\f0\b0 \cf0  
+\f1\b \cf3 into
+\f0\b0 \cf0  tempdb.dbo.final_lifetime_value\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes.driver_id,\
+	(
+\f1\b \cf3 CASE
+\f0\b0 \cf0 \
+	
+\f1\b \cf3 when
+\f0\b0 \cf0  (tempdb.dbo.final_prime_val.prime_value + tempdb.dbo.final_dist_value.dist_value) = \cf7 0\cf0  
+\f1\b \cf3 then
+\f0\b0 \cf0  \cf7 0\cf0 \
+	
+\f1\b \cf3 else
+\f0\b0 \cf0 \
+	tempdb.dbo.final_driver_lifetimes.lifetime_rate*(tempdb.dbo.final_prime_val.prime_value + tempdb.dbo.final_dist_value.dist_value)\
+	
+\f1\b \cf3 END
+\f0\b0 \cf0 )\
+
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes\
+
+\f1\b \cf3 inner
+\f0\b0 \cf0  
+\f1\b \cf3 join
+\f0\b0 \cf0  tempdb.dbo.final_dist_value 
+\f1\b \cf3 on
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes.driver_id = tempdb.dbo.final_dist_value.driver_id\
+
+\f1\b \cf3 inner
+\f0\b0 \cf0  
+\f1\b \cf3 join
+\f0\b0 \cf0  tempdb.dbo.final_prime_val 
+\f1\b \cf3 on
+\f0\b0 \cf0  tempdb.dbo.final_driver_lifetimes.driver_id = tempdb.dbo.final_prime_val.driver_id\cf5 ;\cf0 \
+\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 count
+\f0\b0 \cf0 (\cf7 1\cf0 ) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_prime_val\cf5 ;\cf0 \
+\
+\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  * 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_prime_val 
+\f1\b \cf3 where
+\f0\b0 \cf0  driver_id = \cf6 'c12c2eb875879488e687111335a12805'\cf5 ;\cf0 \
+\
+\
+\
+\
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 min
+\f0\b0 \cf0 (value) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_lifetime_value\cf5 ;\cf0 \
+
+\f1\b \cf3 select
+\f0\b0 \cf0  
+\f1\b \cf4 max
+\f0\b0 \cf0 (value) 
+\f1\b \cf3 from
+\f0\b0 \cf0  tempdb.dbo.final_lifetime_value\cf5 ;\cf0 \
+}
